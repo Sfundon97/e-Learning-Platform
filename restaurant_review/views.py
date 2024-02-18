@@ -8,6 +8,7 @@ from django.views.decorators.cache import cache_page
 
 from restaurant_review.models import Restaurant, Review
 
+
 # Create your views here.
 
 def index(request):
