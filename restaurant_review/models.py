@@ -7,7 +7,7 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=50)
     street_address = models.CharField(max_length=50)
     description = models.CharField(max_length=250)
-    file = models.ImageField(upload_to='restaurant_images/', null=True, blank=True)
+    file = models.FileField(upload_to='files/', null=True, blank=True)
 
     def __str__(self):
         return self.name
