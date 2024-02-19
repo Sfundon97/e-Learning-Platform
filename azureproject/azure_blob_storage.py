@@ -1,31 +1,58 @@
+import os
+import uuid
+from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
-def initialize_blob_service_client():
-    connection_string = "DefaultEndpointsProtocol=https;AccountName=learningstor;AccountKey=e+5a4V5IvC0q+q/phGvA1wHP3e5JSBZGAuf9FIPN7PXAFgTcCA1jP+lbhCr4meLbxLQhceS9ZoPO+AStFI5ZFQ==;EndpointSuffix=core.windows.net"
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    return blob_service_client
+try:
+    account_url = "https://learningstor.blob.core.windows.net"
+    default_credential = DefaultAzureCredential()
 
-def upload_file_to_blob_storage(blob_service_client, container_name, file_path, blob_name):
-    container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(blob_name)
-    with open(file_path, "rb") as data:
-        blob_client.upload_blob(data)
+    # Create the BlobServiceClient object
+    blob_service_client = BlobServiceClient(account_url, credential=default_credential)
 
-def retrieve_file_from_blob_storage(blob_service_client, container_name, blob_name, local_file_path):
-    container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(blob_name)
-    with open(local_file_path, "wb") as data:
-        data.write(blob_client.download_blob().readall())
+    # Create a unique name for the container
+    container_name = str(uuid.uuid4())
 
+    # Create the container
+    container_client = blob_service_client.create_container(container_name)
 
-# Replace 'C:\\Users\\Sfundo Nondwatyu\\OneDrive\\Documents\\Mashauri\\Isixhosa Book.pdf' with the actual file path
-file_path = "C:\\Users\\Sfundo Nondwatyu\\OneDrive\\Documents\\Mashauri\\Isixhosa Book.pdf"
+except Exception as e:
+    print(f"Error creating container: {e}")
 
-blob_service_client = initialize_blob_service_client()
-container_name = "elearningcontent"
+# Create a local directory to hold blob data
+local_path = "./files"
+os.makedirs(local_path, exist_ok=True)
 
-blob_name = "books"
+# Create a file in the local data directory to upload and download
+local_file_name = str(uuid.uuid4()) + ".txt"
+upload_file_path = os.path.join(local_path, local_file_name)
 
+# Write text to the file
+file = open(file=upload_file_path, mode='w')
+file.write("Hello, World!")
+file.close()
 
-# Call the upload_file_to_blob_storage function
-upload_file_to_blob_storage(blob_service_client, container_name, file_path, blob_name)
+# Create a blob client using the local file name as the name for the blob
+blob_client = blob_service_client.get_blob_client(container=container_name, blob=local_file_name)
+
+print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
+
+# Upload the created file
+with open(file=upload_file_path, mode="rb") as data:
+    blob_client.upload_blob(data)
+
+print("\nListing blobs...")
+
+# List the blobs in the container
+blob_list = container_client.list_blobs()
+for blob in blob_list:
+    print("\t" + blob.name)
+
+# Download the blob to a local file
+# Add 'DOWNLOAD' before the .txt extension so you can see both files in the data directory
+download_file_path = os.path.join(local_path, str.replace(local_file_name ,'.txt', 'DOWNLOAD.txt'))
+container_client = blob_service_client.get_container_client(container= container_name) 
+print("\nDownloading blob to \n\t" + download_file_path)
+
+with open(file=download_file_path, mode="wb") as download_file:
+    download_file.write(container_client.download_blob(blob.name).readall())
