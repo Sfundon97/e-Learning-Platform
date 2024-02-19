@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 
-from restaurant_review.models import Restaurant, Review
+from student_review.models import Restaurant, Review
 
 
 # Create your views here.

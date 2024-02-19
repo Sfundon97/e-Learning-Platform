@@ -11,7 +11,7 @@ try:
     blob_service_client = BlobServiceClient(account_url, credential=default_credential)
 
     # Create a unique name for the container
-    container_name = str(uuid.uuid4())
+    container_name = 'documents'
 
     # Create the container
     container_client = blob_service_client.create_container(container_name)
@@ -24,12 +24,12 @@ local_path = "./files"
 os.makedirs(local_path, exist_ok=True)
 
 # Create a file in the local data directory to upload and download
-local_file_name = str(uuid.uuid4()) + ".txt"
+local_file_name = 'Introduction To e-Learning' + ".txt"
 upload_file_path = os.path.join(local_path, local_file_name)
 
 # Write text to the file
 file = open(file=upload_file_path, mode='w')
-file.write("Hello, World!")
+file.write("Welcome to Mashauri's e-Learning Platform")
 file.close()
 
 # Create a blob client using the local file name as the name for the blob
